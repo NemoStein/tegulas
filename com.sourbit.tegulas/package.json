@@ -1,0 +1,21 @@
+{
+  "name": "com.sourbit.tegulas",
+  "version": "0.1.0",
+  "displayName": "Tegulas AutoTile",
+  "description": "",
+  "unity": "2019.1",
+  "dependencies": {},
+  "keywords": [
+    "2d",
+    "tile",
+    "tilemap",
+    "autotile",
+    "tool",
+    "tools"
+  ],
+  "author": {
+    "name": "NemoStein",
+    "email": "contato@nemostein.com.br",
+    "url": "http://nemostein.com.br"
+  }
+}
