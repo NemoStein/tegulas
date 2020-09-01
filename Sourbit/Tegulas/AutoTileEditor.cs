@@ -12,7 +12,7 @@ namespace Sourbit.Tegulas
         {
             base.OnInspectorGUI();
 
-            if (GUILayout.Button("Build Tileset"))
+            if (GUILayout.Button("Generate Tileset"))
             {
                 BuildTileset();
             }
@@ -20,15 +20,14 @@ namespace Sourbit.Tegulas
 
         void BuildTileset()
         {
-            var targetAutoTile = (target as AutoTile);
-            var assetPath = AssetDatabase.GetAssetPath(targetAutoTile);
-            var autoTile = CreateInstance<AutoTile>();
+            var autoTile = (target as AutoTile);
+            var assetPath = AssetDatabase.GetAssetPath(autoTile);
+            var sourceTexture = autoTile.SourceTexture;
 
-            var sourceTexture = targetAutoTile.SourceTexture;
-            autoTile.SourceTexture = sourceTexture ?? throw new Exception("No Source Texture");
-
-            AssetDatabase.DeleteAsset(assetPath);
-            AssetDatabase.CreateAsset(autoTile, assetPath);
+            if (sourceTexture == null)
+            {
+                throw new Exception("No Source Texture");
+            }
 
             if (sourceTexture.height % 2 == 1)
             {
@@ -38,6 +37,15 @@ namespace Sourbit.Tegulas
             if (sourceTexture.height != sourceTexture.width / 5f)
             {
                 throw new Exception($"Tile must be square. Tile height: {sourceTexture.height}. Expected texture width: {sourceTexture.height * 5}.");
+            }
+
+            var assets = AssetDatabase.LoadAllAssetsAtPath(assetPath);
+            foreach (var asset in assets)
+            {
+                if (!(asset is AutoTile))
+                {
+                    DestroyImmediate(asset, true);
+                }
             }
 
             var TileSide = sourceTexture.height;
@@ -81,7 +89,9 @@ namespace Sourbit.Tegulas
                         slicesMap[sliceMask].Add(tileOffset);
                     }
 
-                    var sprite = Sprite.Create(texture, new Rect(tileOffset % 7 * TileSide, tileOffset / 7 * TileSide, TileSide, TileSide), new Vector2(0.5f, 0.5f), TileSide);
+                    var rect = new Rect(tileOffset % 7 * TileSide, tileOffset / 7 * TileSide, TileSide, TileSide);
+                    var pivot = new Vector2(0.5f, 0.5f);
+                    var sprite = Sprite.Create(texture, rect, pivot, TileSide);
                     sprite.name = "Sprite " + mask;
 
                     AssetDatabase.AddObjectToAsset(sprite, autoTile);
@@ -116,6 +126,8 @@ namespace Sourbit.Tegulas
 
             AssetDatabase.AddObjectToAsset(texture, assetPath);
             AssetDatabase.ImportAsset(assetPath);
+
+            autoTile.Prepare();
         }
 
         int[] SlicesFromBitmask(int bitmask)

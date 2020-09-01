@@ -30,7 +30,10 @@ namespace Sourbit.Tegulas
 
         override public void GetTileData(Vector3Int location, ITilemap tilemap, ref TileData tileData)
         {
-            Prepare();
+            if (Tiles == null)
+            {
+                Prepare();
+            }
 
             var mask = 0;
 
@@ -78,19 +81,16 @@ namespace Sourbit.Tegulas
             tileData.sprite = sprite;
         }
 
-        void Prepare()
+        public void Prepare()
         {
-            if (Tiles == null)
+            Tiles = new Dictionary<int, Sprite>();
+            var all = AssetDatabase.LoadAllAssetRepresentationsAtPath(AssetDatabase.GetAssetPath(this));
+            foreach (var item in all)
             {
-                Tiles = new Dictionary<int, Sprite>();
-                var all = AssetDatabase.LoadAllAssetRepresentationsAtPath(AssetDatabase.GetAssetPath(this));
-                foreach (var item in all)
+                if (item is Sprite sprite)
                 {
-                    if (item.name.StartsWith("Sprite"))
-                    {
-                        var key = Convert.ToInt16(item.name.Split(' ')[1]);
-                        Tiles.Add(key, item as Sprite);
-                    }
+                    var key = Convert.ToInt16(sprite.name.Split(' ')[1]);
+                    Tiles.Add(key, sprite);
                 }
             }
         }
