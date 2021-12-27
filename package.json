@@ -2,7 +2,7 @@
   "name": "sourbit.tegulas",
   "version": "0.1.1",
   "displayName": "Tegulas AutoTile",
-  "description": "",
+  "description": "Automatic tile placement with minimal effort!",
   "unity": "2019.1",
   "dependencies": {
     "com.unity.2d.tilemap": "1.0.0"
