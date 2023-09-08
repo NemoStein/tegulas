@@ -1,6 +1,6 @@
 {
   "name": "sourbit.tegulas",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "displayName": "Tegulas AutoTile",
   "description": "Automatic tile placement with minimal effort!",
   "unity": "2019.1",
