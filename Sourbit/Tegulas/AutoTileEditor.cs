@@ -125,7 +125,8 @@ namespace Sourbit.Tegulas
             texture.name = "Tileset Texture";
 
             AssetDatabase.AddObjectToAsset(texture, assetPath);
-            AssetDatabase.ImportAsset(assetPath);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
 
             autoTile.Prepare();
         }
