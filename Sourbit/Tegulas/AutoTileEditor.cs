@@ -29,14 +29,9 @@ namespace Sourbit.Tegulas
                 throw new Exception("No Source Texture");
             }
 
-            if (sourceTexture.height % 2 == 1)
+            if (sourceTexture.height % 2 != 0 || sourceTexture.width % 10 != 0)
             {
-                throw new Exception($"Tile side (width and height) must be multiple of 2 (even). Odd tile height: {sourceTexture.height}");
-            }
-
-            if (sourceTexture.height != sourceTexture.width / 5f)
-            {
-                throw new Exception($"Tile must be square. Tile height: {sourceTexture.height}. Expected texture width: {sourceTexture.height * 5}.");
+                throw new Exception($"Tile side (width and height) must be multiple of 2 (even).\nTile height: {sourceTexture.height}\nTile width: {sourceTexture.width / 5f}");
             }
 
             var assets = AssetDatabase.LoadAllAssetsAtPath(assetPath);
@@ -48,17 +43,16 @@ namespace Sourbit.Tegulas
                 }
             }
 
-            var TileSide = sourceTexture.height;
-            var TileHalfSide = TileSide / 2;
-            var minSize = TileSide * 7;
-            var powerOfTwo = 2;
+            var TileHeight = sourceTexture.height;
+            var TileWidth = sourceTexture.width / 5;
 
-            while (powerOfTwo < minSize)
-            {
-                powerOfTwo *= 2;
-            }
+            var TileHalfWidth = TileWidth / 2;
+            var TileHalfHeight = TileHeight / 2;
 
-            var texture = new Texture2D(powerOfTwo, powerOfTwo, TextureFormat.RGBA32, false)
+            var AtlasWidth = (int) Mathf.Pow(2, Mathf.Ceil(Mathf.Log(TileWidth * 7, 2)));
+            var AtlasHeight = (int) Mathf.Pow(2, Mathf.Ceil(Mathf.Log(TileHeight * 7, 2)));
+
+            var texture = new Texture2D(AtlasWidth, AtlasHeight, TextureFormat.RGBA32, false)
             {
                 filterMode = FilterMode.Point
             };
@@ -89,9 +83,9 @@ namespace Sourbit.Tegulas
                         slicesMap[sliceMask].Add(tileOffset);
                     }
 
-                    var rect = new Rect(tileOffset % 7 * TileSide, tileOffset / 7 * TileSide, TileSide, TileSide);
+                    var rect = new Rect(tileOffset % 7 * TileWidth, tileOffset / 7 * TileHeight, TileWidth, TileHeight);
                     var pivot = new Vector2(0.5f, 0.5f);
-                    var sprite = Sprite.Create(texture, rect, pivot, TileSide);
+                    var sprite = Sprite.Create(texture, rect, pivot, TileHeight);
                     sprite.name = "Sprite " + mask;
 
                     AssetDatabase.AddObjectToAsset(sprite, autoTile);
@@ -107,17 +101,17 @@ namespace Sourbit.Tegulas
                 var tileMask = sourceMask >> 2 & 0b111;
                 var sliceMask = sourceMask & 0b11;
 
-                var sourceX = tileMask * TileSide + (sliceMask & 1) * TileHalfSide;
-                var sourceY = (sliceMask >> 1 & 1) * TileHalfSide;
+                var sourceX = tileMask * TileWidth + (sliceMask & 1) * TileHalfWidth;
+                var sourceY = (sliceMask >> 1 & 1) * TileHalfHeight;
 
-                var slicePixels = sourceTexture.GetPixels(sourceX, sourceY, TileHalfSide, TileHalfSide);
+                var slicePixels = sourceTexture.GetPixels(sourceX, sourceY, TileHalfWidth, TileHalfHeight);
 
                 foreach (var targetMask in entry.Value)
                 {
-                    var sliceX = targetMask % 7 * TileSide + TileHalfSide * (sourceMask & 1);
-                    var sliceY = targetMask / 7 * TileSide + TileHalfSide * (sourceMask >> 1 & 1);
+                    var sliceX = targetMask % 7 * TileWidth + TileHalfWidth * (sourceMask & 1);
+                    var sliceY = targetMask / 7 * TileHeight + TileHalfHeight * (sourceMask >> 1 & 1);
 
-                    texture.SetPixels(sliceX, sliceY, TileHalfSide, TileHalfSide, slicePixels);
+                    texture.SetPixels(sliceX, sliceY, TileHalfWidth, TileHalfHeight, slicePixels);
                 }
             }
 
@@ -144,10 +138,14 @@ namespace Sourbit.Tegulas
 
         int SliceFromBits(bool vertical, bool horizontal, bool corner)
         {
-            if (corner) return 4;
-            if (vertical && horizontal) return 3;
-            if (horizontal) return 2;
-            if (vertical) return 1;
+            if (corner)
+                return 4;
+            if (vertical && horizontal)
+                return 3;
+            if (horizontal)
+                return 2;
+            if (vertical)
+                return 1;
             return 0;
         }
     }
